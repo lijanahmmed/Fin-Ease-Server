@@ -26,10 +26,16 @@ async function run() {
     const transactionCollection = db.collection("transaction");
 
     app.post("/transaction", async (req, res) => {
-      const transactionData = req.body;
+      const transactionData = req.body;  
       const result = await transactionCollection.insertOne(transactionData);
       res.send(result);
     });
+
+    app.get("/transaction", async(req, res) => {
+      const email = req.query.email;
+      const result = await transactionCollection.find({email: email}).toArray();
+      res.send(result)
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log(

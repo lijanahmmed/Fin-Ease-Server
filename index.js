@@ -1,12 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const admin = require("firebase-admin");
+const serviceAccount = require("./service-key.json");
 require("dotenv").config();
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 
 const uri = `mongodb+srv://${process.env.USER_DB}:${process.env.PASSWORD_DB}@cluster0.3kkgkzf.mongodb.net/?appName=Cluster0`;
 

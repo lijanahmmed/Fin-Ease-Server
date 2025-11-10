@@ -11,9 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
-
 
 const uri = `mongodb+srv://${process.env.USER_DB}:${process.env.PASSWORD_DB}@cluster0.3kkgkzf.mongodb.net/?appName=Cluster0`;
 
@@ -25,6 +24,27 @@ const client = new MongoClient(uri, {
   },
 });
 
+const verifyToken = async (req, res, next) => {
+  const authorization = req.headers.authorization;
+
+  if (!authorization) {
+    return res.status(401).send({
+      message: "unauthorized access.",
+    });
+  }
+
+  const token = authorization.split(" ")[1];
+  try {
+    await admin.auth().verifyIdToken(token);
+
+    next();
+  } catch (error) {
+    res.status(401).send({
+      message: "unauthorized access.",
+    });
+  }
+};
+
 async function run() {
   try {
     await client.connect();
@@ -33,16 +53,18 @@ async function run() {
     const transactionCollection = db.collection("transaction");
 
     app.post("/transaction", async (req, res) => {
-      const transactionData = req.body;  
+      const transactionData = req.body;
       const result = await transactionCollection.insertOne(transactionData);
       res.send(result);
     });
 
-    app.get("/transaction", async(req, res) => {
+    app.get("/transaction", verifyToken, async (req, res) => {
       const email = req.query.email;
-      const result = await transactionCollection.find({email: email}).toArray();
-      res.send(result)
-    })
+      const result = await transactionCollection
+        .find({ email: email })
+        .toArray();
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(

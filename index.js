@@ -63,6 +63,7 @@ async function run() {
       const result = await transactionCollection
         .find({ email: email })
         .toArray();
+
       res.send(result);
     });
 
@@ -71,13 +72,10 @@ async function run() {
       const objectId = new ObjectId(id);
 
       const result = await transactionCollection.findOne({ _id: objectId });
-
-      res.send({
-        result,
-      });
+      res.send({ result });
     });
 
-    app.put("/transaction/:id",  async (req, res) => {
+    app.put("/transaction/:id", async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const objectId = new ObjectId(id);
@@ -86,10 +84,15 @@ async function run() {
         $set: data,
       };
       const result = await transactionCollection.updateOne(filter, update);
+      res.send(result);
+    });
 
-      res.send({
-        result,
+    app.delete("/transaction/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await transactionCollection.deleteOne({
+        _id: new ObjectId(id),
       });
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });

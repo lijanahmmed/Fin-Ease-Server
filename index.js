@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const admin = require("firebase-admin");
 const serviceAccount = require("./service-key.json");
 require("dotenv").config();
@@ -64,6 +64,17 @@ async function run() {
         .find({ email: email })
         .toArray();
       res.send(result);
+    });
+
+    app.get("/transaction/:id", verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const objectId = new ObjectId(id);
+
+      const result = await transactionCollection.findOne({ _id: objectId });
+
+      res.send({
+        result,
+      });
     });
 
     await client.db("admin").command({ ping: 1 });

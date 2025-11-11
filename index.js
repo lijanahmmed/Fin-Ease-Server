@@ -77,6 +77,21 @@ async function run() {
       });
     });
 
+    app.put("/transaction/:id",  async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const objectId = new ObjectId(id);
+      const filter = { _id: objectId };
+      const update = {
+        $set: data,
+      };
+      const result = await transactionCollection.updateOne(filter, update);
+
+      res.send({
+        result,
+      });
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"

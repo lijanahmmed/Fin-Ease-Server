@@ -52,13 +52,13 @@ async function run() {
     const db = client.db("FinEase_DB");
     const transactionCollection = db.collection("transaction");
 
-    app.post("/transaction", async (req, res) => {
+    app.post("/add-transaction", verifyToken, async (req, res) => {
       const transactionData = req.body;
       const result = await transactionCollection.insertOne(transactionData);
       res.send(result);
     });
 
-    app.get("/transaction", verifyToken, async (req, res) => {
+    app.get("/my-transaction", verifyToken, async (req, res) => {
       const email = req.query.email;
       const sortBy = req.query.sortBy || "date";
       const order = req.query.order === "asc" ? 1 : -1;
@@ -80,7 +80,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/transaction/:id", verifyToken, async (req, res) => {
+    app.get("/my-transaction/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const objectId = new ObjectId(id);
 
@@ -88,7 +88,7 @@ async function run() {
       res.send({ result });
     });
 
-    app.put("/transaction/:id", async (req, res) => {
+    app.put("/update-transaction/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const objectId = new ObjectId(id);
@@ -100,7 +100,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/transaction/:id", async (req, res) => {
+    app.delete("/transaction/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const result = await transactionCollection.deleteOne({
         _id: new ObjectId(id),

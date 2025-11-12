@@ -60,10 +60,23 @@ async function run() {
 
     app.get("/transaction", verifyToken, async (req, res) => {
       const email = req.query.email;
-      const result = await transactionCollection
-        .find({ email: email })
-        .toArray();
+      const sortBy = req.query.sortBy || "date";
+      const order = req.query.order === "asc" ? 1 : -1;
 
+      const query = { email };
+      let cursor;
+
+      if (sortBy === "amount") {
+        cursor = transactionCollection.aggregate([
+          { $match: query },
+          { $addFields: { amountNum: { $toDouble: "$amount" } } },
+          { $sort: { amountNum: order } },
+        ]);
+      } else {
+        cursor = transactionCollection.find(query).sort({ [sortBy]: order });
+      }
+
+      const result = await cursor.toArray();
       res.send(result);
     });
 
